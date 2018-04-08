@@ -58,7 +58,7 @@ char fifo_file[1000]="";
 
 int clear_iptables=0;
 int wait_xtables_lock=0;
-string iptables_command0="iptables ";
+string iptables_command0="iptables -6 ";
 string iptables_command="";
 string iptables_pattern="";
 int iptables_rule_added=0;
