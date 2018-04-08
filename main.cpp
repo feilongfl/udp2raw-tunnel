@@ -484,7 +484,7 @@ int client_on_raw_recv(conn_info_t &conn_info) //called when raw fd received a p
 			sockaddr_in6 tmp_sockaddr={0};
 
 			tmp_sockaddr.sin6_family  = AF_INET;
-			tmp_sockaddr.sin6_addr.s_addr=(u64>>32u);
+			tmp_sockaddr.sin6_addr.s6_addr=(u64>>32u);
 
 			tmp_sockaddr.sin6_port= htons(uint16_t((u64<<32u)>>32u));
 
@@ -832,7 +832,7 @@ int server_on_raw_recv_ready(conn_info_t &conn_info,char * ip_port,char type,cha
 			//memset(&remote_addr_in, 0, sizeof(remote_addr_in));
 			remote_addr_in.sin6_family  = AF_INET;
 			remote_addr_in.sin6_port = htons(remote_port);
-			remote_addr_in.sin6_addr.s_addr = remote_ip_uint32;
+			remote_addr_in.sin6_addr.s6_addr = remote_ip_uint32;
 
 			int new_udp_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 			if (new_udp_fd < 0) {
@@ -1187,7 +1187,7 @@ int client_event_loop()
 	//memset(&local_me, 0, sizeof(local_me));
 	local_me.sin6_family  = AF_INET;
 	local_me.sin6_port = htons(local_port);
-	local_me.sin6_addr.s_addr = local_ip_uint32;
+	local_me.sin6_addr.s6_addr = local_ip_uint32;
 
 
 	if (bind(udp_fd, (struct sockaddr*) &local_me, slen) == -1) {
@@ -1331,11 +1331,11 @@ int client_event_loop()
 						ntohs(udp_new_addr_in.sin6_port),recv_len);
 
 				/*
-				if(udp_old_addr_in.sin6_addr.s_addr==0&&udp_old_addr_in.sin6_port==0)
+				if(udp_old_addr_in.sin6_addr.s6_addr==0&&udp_old_addr_in.sin6_port==0)
 				{
 					memcpy(&udp_old_addr_in,&udp_new_addr_in,sizeof(udp_new_addr_in));
 				}
-				else if(udp_new_addr_in.sin6_addr.s_addr!=udp_old_addr_in.sin6_addr.s_addr
+				else if(udp_new_addr_in.sin6_addr.s6_addr!=udp_old_addr_in.sin6_addr.s6_addr
 						||udp_new_addr_in.sin6_port!=udp_old_addr_in.sin6_port)
 				{
 					if(get_current_time()- last_udp_recv_time <udp_timeout)
@@ -1352,7 +1352,7 @@ int client_event_loop()
 				}*/
 
 				//last_udp_recv_time=get_current_time();
-				u64_t u64=((u64_t(udp_new_addr_in.sin6_addr.s_addr))<<32u)+ntohs(udp_new_addr_in.sin6_port);
+				u64_t u64=((u64_t(udp_new_addr_in.sin6_addr.s6_addr))<<32u)+ntohs(udp_new_addr_in.sin6_port);
 				u32_t conv;
 
 				if(!conn_info.blob->conv_manager.is_u64_used(u64))
@@ -1432,7 +1432,7 @@ int server_event_loop()
 
      temp_bind_addr.sin6_family  = AF_INET;
      temp_bind_addr.sin6_port = htons(local_port);
-     temp_bind_addr.sin6_addr.s_addr = local_ip_uint32;
+     temp_bind_addr.sin6_addr.s6_addr = local_ip_uint32;
 
      if (bind(bind_fd, (struct sockaddr*)&temp_bind_addr, sizeof(temp_bind_addr)) !=0)
      {
