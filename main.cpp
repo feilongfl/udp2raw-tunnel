@@ -1757,9 +1757,18 @@ int main(int argc, char *argv[])
 		mylog(log_warn,"you can run udp2raw with non-root account for better security. check README.md in repo for more info.\n");
 	}
 
-	local_ip_uint32=inet_addr(local_ip);
+	struct in_addr local_ip_s, remote_ip_s, source_ip_s;
+
+	inet_pton(AF_INET6, local_ip, (void *)&local_ip_s);
+	local_ip_uint32 = local_ip_s.s_addr;
+	inet_pton(AF_INET6, remote_ip, (void *)&remote_ip_s);
+	remote_ip_uint32 = remote_ip_s.s_addr;
+	inet_pton(AF_INET6, source_ip, (void *)&source_ip_s);
+	source_ip_uint32 = source_ip_s.s_addr;
+
+	/*local_ip_uint32=inet_addr(local_ip);
 	remote_ip_uint32=inet_addr(remote_ip);
-	source_ip_uint32=inet_addr(source_ip);
+	source_ip_uint32=inet_addr(source_ip);*/
 
 
 	//current_time_rough=get_current_time();

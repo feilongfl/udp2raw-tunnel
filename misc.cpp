@@ -58,7 +58,7 @@ char fifo_file[1000]="";
 
 int clear_iptables=0;
 int wait_xtables_lock=0;
-string iptables_command0="iptables ";
+string iptables_command0="ip6tables ";
 string iptables_command="";
 string iptables_pattern="";
 int iptables_rule_added=0;
@@ -378,7 +378,7 @@ void process_arg(int argc, char *argv[])  //process all options
 		case 'l':
 			no_l = 0;
 			if (strchr(optarg, ':') != 0) {
-				sscanf(optarg, "%[^:]:%d", local_ip, &local_port);
+				sscanf(optarg, "\[%[^\]]\]:%d", local_ip, &local_port);
 				if(local_port==22)
 				{
 					mylog(log_fatal,"port 22 not allowed\n");
@@ -393,7 +393,7 @@ void process_arg(int argc, char *argv[])  //process all options
 		case 'r':
 			no_r = 0;
 			if (strchr(optarg, ':') != 0) {
-				sscanf(optarg, "%[^:]:%d", remote_ip, &remote_port);
+				sscanf(optarg, "\[%[^\]]\]:%d", remote_ip, &remote_port);
 				if(remote_port==22)
 				{
 					mylog(log_fatal,"port 22 not allowed\n");

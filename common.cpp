@@ -34,12 +34,21 @@ u32_t get_u64_l(u64_t a)
 {
 	return (a<<32u)>>32u;
 }
-
+/*
 char * my_ntoa(u32_t ip)
 {
 	in_addr a;
 	a.s_addr=ip;
 	return inet_ntoa(a);
+}
+*/
+
+in_addr a;
+char IPdotdec[40];
+char * my_ntoa(u32_t ip)
+{
+	a.s_addr=ip;
+	return (char *)inet_ntop(AF_INET6, (void *)&a, IPdotdec, 40);
 }
 
 void init_random_number_fd()
