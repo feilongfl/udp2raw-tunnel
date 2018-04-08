@@ -25,7 +25,7 @@ int max_rst_allowed=-1;
 
 fd_manager_t fd_manager;
 
-char local_ip[100]="0.0.0.0", remote_ip[100]="255.255.255.255",source_ip[100]="0.0.0.0";//local_ip is for -l option,remote_ip for -r option,source for --source-ip
+char local_ip[100]="::", remote_ip[100]="::1",source_ip[100]="::";//local_ip is for -l option,remote_ip for -r option,source for --source-ip
 u32_t local_ip_uint32,remote_ip_uint32,source_ip_uint32;//convert from last line.
 int local_port = -1, remote_port=-1,source_port=0;//similiar to local_ip  remote_ip,buf for port.source_port=0 indicates --source-port is not enabled
 
@@ -378,7 +378,7 @@ void process_arg(int argc, char *argv[])  //process all options
 		case 'l':
 			no_l = 0;
 			if (strchr(optarg, ':') != 0) {
-				sscanf(optarg, "%[^:]:%d", local_ip, &local_port);
+				sscanf(optarg, "\[%[^\]]\]:%d", local_ip, &local_port);
 				if(local_port==22)
 				{
 					mylog(log_fatal,"port 22 not allowed\n");
@@ -393,7 +393,7 @@ void process_arg(int argc, char *argv[])  //process all options
 		case 'r':
 			no_r = 0;
 			if (strchr(optarg, ':') != 0) {
-				sscanf(optarg, "%[^:]:%d", remote_ip, &remote_port);
+				sscanf(optarg, "\[%[^\]]\]:%d", remote_ip, &remote_port);
 				if(remote_port==22)
 				{
 					mylog(log_fatal,"port 22 not allowed\n");
