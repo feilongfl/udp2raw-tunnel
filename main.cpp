@@ -534,7 +534,7 @@ int server_on_raw_recv_multi() //called when server received an raw packet
 	u32_t ip=peek_info.src_ip;uint16_t port=peek_info.src_port;
 
 	char ip_port[40];
-	sprintf(ip_port,"%s:%d",my_ntoa(ip),port);
+	sprintf(ip_port,"[%s]:%d",my_ntoa(ip),port);
 	mylog(log_trace,"[%s]peek_raw\n",ip_port);
 	int data_len; char *data;
 
