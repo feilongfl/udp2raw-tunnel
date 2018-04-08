@@ -43,12 +43,12 @@ char * my_ntoa(u32_t ip)
 }
 */
 
-in_addr a;
+in_addr tmp;
 char IPdotdec[40];
 char * my_ntoa(u32_t ip)
 {
-	a.s_addr=ip;
-	return (char *)inet_ntop(AF_INET6, (void *)&a, IPdotdec, 40);
+	tmp.s_addr=ip;
+	return (char *)inet_ntop(AF_INET6, (void *)&tmp, IPdotdec, 40);
 }
 
 void init_random_number_fd()

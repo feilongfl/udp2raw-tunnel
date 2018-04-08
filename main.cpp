@@ -481,12 +481,12 @@ int client_on_raw_recv(conn_info_t &conn_info) //called when raw fd received a p
 			u64_t u64=conn_info.blob->conv_manager.find_u64_by_conv(tmp_conv_id);
 
 
-			sockaddr_in tmp_sockaddr={0};
+			sockaddr_in6 tmp_sockaddr={0};
 
-			tmp_sockaddr.sin_family = AF_INET;
-			tmp_sockaddr.sin_addr.s_addr=(u64>>32u);
+			tmp_sockaddr.sin6_family  = AF_INET;
+			tmp_sockaddr.sin6_addr.s_addr=(u64>>32u);
 
-			tmp_sockaddr.sin_port= htons(uint16_t((u64<<32u)>>32u));
+			tmp_sockaddr.sin6_port= htons(uint16_t((u64<<32u)>>32u));
 
 
 			int ret=sendto(udp_fd,data+sizeof(u32_t),data_len -(sizeof(u32_t)),0,(struct sockaddr *)&tmp_sockaddr,sizeof(tmp_sockaddr));
@@ -496,7 +496,7 @@ int client_on_raw_recv(conn_info_t &conn_info) //called when raw fd received a p
 		    	mylog(log_warn,"sento returned %d\n",ret);
 				//perror("ret<0");
 			}
-			mylog(log_trace,"%s :%d\n",inet_ntoa(tmp_sockaddr.sin_addr),ntohs(tmp_sockaddr.sin_port));
+			mylog(log_trace,"%s :%d\n",inet_ntoa(tmp_sockaddr.sin6_addr),ntohs(tmp_sockaddr.sin6_port));
 			mylog(log_trace,"%d byte sent\n",ret);
 		}
 		else
@@ -534,7 +534,7 @@ int server_on_raw_recv_multi() //called when server received an raw packet
 	u32_t ip=peek_info.src_ip;uint16_t port=peek_info.src_port;
 
 	char ip_port[40];
-	sprintf(ip_port,"%s:%d",my_ntoa(ip),port);
+	sprintf(ip_port,"[%s]:%d",my_ntoa(ip),port);
 	mylog(log_trace,"[%s]peek_raw\n",ip_port);
 	int data_len; char *data;
 
@@ -826,13 +826,13 @@ int server_on_raw_recv_ready(conn_info_t &conn_info,char * ip_port,char type,cha
 						tmp_conv_id);
 				return 0;
 			}
-			struct sockaddr_in remote_addr_in={0};
+			struct sockaddr_in6 remote_addr_in={0};
 
-			socklen_t slen = sizeof(sockaddr_in);
+			socklen_t slen = sizeof(sockaddr_in6);
 			//memset(&remote_addr_in, 0, sizeof(remote_addr_in));
-			remote_addr_in.sin_family = AF_INET;
-			remote_addr_in.sin_port = htons(remote_port);
-			remote_addr_in.sin_addr.s_addr = remote_ip_uint32;
+			remote_addr_in.sin6_family  = AF_INET;
+			remote_addr_in.sin6_port = htons(remote_port);
+			remote_addr_in.sin6_addr.s_addr = remote_ip_uint32;
 
 			int new_udp_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 			if (new_udp_fd < 0) {
@@ -1152,9 +1152,8 @@ int client_event_loop()
 		}
 
 	}
-	in_addr tmp;
-	tmp.s_addr=source_ip_uint32;
-	mylog(log_info,"source ip = %s\n",inet_ntoa(tmp));
+
+	mylog(log_info,"source ip = %s\n", my_ntoa(source_ip_uint32));
 	//printf("done\n");
 
 
@@ -1182,13 +1181,13 @@ int client_event_loop()
 	int yes = 1;
 	//setsockopt(udp_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 
-	struct sockaddr_in local_me={0};
+	struct sockaddr_in6 local_me={0};
 
-	socklen_t slen = sizeof(sockaddr_in);
+	socklen_t slen = sizeof(sockaddr_in6);
 	//memset(&local_me, 0, sizeof(local_me));
-	local_me.sin_family = AF_INET;
-	local_me.sin_port = htons(local_port);
-	local_me.sin_addr.s_addr = local_ip_uint32;
+	local_me.sin6_family  = AF_INET;
+	local_me.sin6_port = htons(local_port);
+	local_me.sin6_addr.s_addr = local_ip_uint32;
 
 
 	if (bind(udp_fd, (struct sockaddr*) &local_me, slen) == -1) {
@@ -1226,7 +1225,7 @@ int client_event_loop()
 
 	//sleep(10);
 
-	//memset(&udp_old_addr_in,0,sizeof(sockaddr_in));
+	//memset(&udp_old_addr_in,0,sizeof(sockaddr_in6));
 	int unbind=1;
 
 	set_timer(epollfd,timer_fd);
@@ -1310,8 +1309,8 @@ int client_event_loop()
 			{
 
 				int recv_len;
-				struct sockaddr_in udp_new_addr_in={0};
-				socklen_t udp_new_addr_len = sizeof(sockaddr_in);
+				struct sockaddr_in6 udp_new_addr_in={0};
+				socklen_t udp_new_addr_len = sizeof(sockaddr_in6);
 				if ((recv_len = recvfrom(udp_fd, buf, max_data_len+1, 0,
 						(struct sockaddr *) &udp_new_addr_in, &udp_new_addr_len)) == -1) {
 					mylog(log_error,"recv_from error,this shouldnt happen at client\n");
@@ -1328,16 +1327,16 @@ int client_event_loop()
 				{
 					mylog(log_warn,"huge packet,data len=%d (>=%d).strongly suggested to set a smaller mtu at upper level,to get rid of this warn\n ",recv_len,mtu_warn);
 				}
-				mylog(log_trace,"Received packet from %s:%d,len: %d\n", inet_ntoa(udp_new_addr_in.sin_addr),
-						ntohs(udp_new_addr_in.sin_port),recv_len);
+				mylog(log_trace,"Received packet from %s:%d,len: %d\n", inet_ntoa(udp_new_addr_in.sin6_addr),
+						ntohs(udp_new_addr_in.sin6_port),recv_len);
 
 				/*
-				if(udp_old_addr_in.sin_addr.s_addr==0&&udp_old_addr_in.sin_port==0)
+				if(udp_old_addr_in.sin6_addr.s_addr==0&&udp_old_addr_in.sin6_port==0)
 				{
 					memcpy(&udp_old_addr_in,&udp_new_addr_in,sizeof(udp_new_addr_in));
 				}
-				else if(udp_new_addr_in.sin_addr.s_addr!=udp_old_addr_in.sin_addr.s_addr
-						||udp_new_addr_in.sin_port!=udp_old_addr_in.sin_port)
+				else if(udp_new_addr_in.sin6_addr.s_addr!=udp_old_addr_in.sin6_addr.s_addr
+						||udp_new_addr_in.sin6_port!=udp_old_addr_in.sin6_port)
 				{
 					if(get_current_time()- last_udp_recv_time <udp_timeout)
 					{
@@ -1353,7 +1352,7 @@ int client_event_loop()
 				}*/
 
 				//last_udp_recv_time=get_current_time();
-				u64_t u64=((u64_t(udp_new_addr_in.sin_addr.s_addr))<<32u)+ntohs(udp_new_addr_in.sin_port);
+				u64_t u64=((u64_t(udp_new_addr_in.sin6_addr.s_addr))<<32u)+ntohs(udp_new_addr_in.sin6_port);
 				u32_t conv;
 
 				if(!conn_info.blob->conv_manager.is_u64_used(u64))
@@ -1365,7 +1364,7 @@ int client_event_loop()
 					}
 					conv=conn_info.blob->conv_manager.get_new_conv();
 					conn_info.blob->conv_manager.insert_conv(conv,u64);
-					mylog(log_info,"new packet from %s:%d,conv_id=%x\n",inet_ntoa(udp_new_addr_in.sin_addr),ntohs(udp_new_addr_in.sin_port),conv);
+					mylog(log_info,"new packet from %s:%d,conv_id=%x\n",inet_ntoa(udp_new_addr_in.sin6_addr),ntohs(udp_new_addr_in.sin6_port),conv);
 				}
 				else
 				{
@@ -1428,12 +1427,12 @@ int server_event_loop()
 		 bind_fd=socket(AF_INET,SOCK_DGRAM,0);
 	 }
 
-	 struct sockaddr_in temp_bind_addr={0};
+	 struct sockaddr_in6 temp_bind_addr={0};
     // bzero(&temp_bind_addr, sizeof(temp_bind_addr));
 
-     temp_bind_addr.sin_family = AF_INET;
-     temp_bind_addr.sin_port = htons(local_port);
-     temp_bind_addr.sin_addr.s_addr = local_ip_uint32;
+     temp_bind_addr.sin6_family  = AF_INET;
+     temp_bind_addr.sin6_port = htons(local_port);
+     temp_bind_addr.sin6_addr.s_addr = local_ip_uint32;
 
      if (bind(bind_fd, (struct sockaddr*)&temp_bind_addr, sizeof(temp_bind_addr)) !=0)
      {

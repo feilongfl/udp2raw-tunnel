@@ -341,7 +341,7 @@ int init_ifindex(const char * if_name,int &index)
 }
 bool interface_has_arp(const char * interface) {
     struct ifreq ifr;
-   // int sock = socket(PF_INET6, SOCK_DGRAM, IPPROTO_IP);
+   // int sock = socket(PF_INET66, SOCK_DGRAM, IPPROTO_IP);
     int sock=raw_send_fd;
     memset(&ifr, 0, sizeof(ifr));
     strcpy(ifr.ifr_name, interface);
@@ -612,10 +612,10 @@ int send_raw_ip(raw_info_t &raw_info,const char * payload,int payloadlen)
     int ret;
     if(lower_level==0)
     {
-		struct sockaddr_in sin={0};
-		sin.sin_family = AF_INET;
-		//sin.sin_port = htons(info.dst_port); //dont need this
-		sin.sin_addr.s_addr = send_info.dst_ip;
+		struct sockaddr_in6 sin={0};
+		sin.sin6_family  = AF_INET;
+		//sin.sin6_port = htons(info.dst_port); //dont need this
+		sin.sin6_addr.s_addr = send_info.dst_ip;
 		ret = sendto(raw_send_fd, send_raw_ip_buf, ip_tot_len ,  0, (struct sockaddr *) &sin, sizeof (sin));
 
     }
@@ -1024,13 +1024,13 @@ int send_raw_tcp_deprecated(const packet_info_t &info,const char * payload,int p
     //TCP header
     struct tcphdr *tcph = (struct tcphdr *) (raw_send_buf + sizeof (struct ip));
 
-    struct sockaddr_in sin;
+    struct sockaddr_in6 sin;
     struct pseudo_header psh;
 
     //some address resolution
-    sin.sin_family = AF_INET;
-    sin.sin_port = htons(info.dst_port);
-    sin.sin_addr.s_addr = info.dst_ip;
+    sin.sin6_family  = AF_INET;
+    sin.sin6_port = htons(info.dst_port);
+    sin.sin6_addr.s_addr = info.dst_ip;
 
     //Fill in the IP Header
     iph->ihl = 5;
@@ -1128,7 +1128,7 @@ int send_raw_tcp_deprecated(const packet_info_t &info,const char * payload,int p
     memcpy(data , payload, payloadlen);
 
     psh.source_address = info.src_ip;
-    psh.dest_address = sin.sin_addr.s_addr;
+    psh.dest_address = sin.sin6_addr.s_addr;
     psh.placeholder = 0;
     psh.protocol = IPPROTO_TCP;
     psh.tcp_length = htons(tcph->doff*4 + payloadlen );
@@ -1825,13 +1825,13 @@ int recv_raw(raw_info_t &raw_info,char *& payload,int & payloadlen)
 
 int get_src_adress(u32_t &ip,u32_t remote_ip_uint32,int remote_port)  //a trick to get src adress for a dest adress,so that we can use the src address in raw socket as source ip
 {
-	struct sockaddr_in remote_addr_in={0};
+	struct sockaddr_in6 remote_addr_in={0};
 
-	socklen_t slen = sizeof(sockaddr_in);
+	socklen_t slen = sizeof(sockaddr_in6);
 	//memset(&remote_addr_in, 0, sizeof(remote_addr_in));
-	remote_addr_in.sin_family = AF_INET;
-	remote_addr_in.sin_port = htons(remote_port);
-	remote_addr_in.sin_addr.s_addr = remote_ip_uint32;
+	remote_addr_in.sin6_family  = PF_INET6;
+	remote_addr_in.sin6_port = htons(remote_port);
+	remote_addr_in.sin6_addr.s_addr = remote_ip_uint32;
 
 
 	int new_udp_fd=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -1851,12 +1851,12 @@ int get_src_adress(u32_t &ip,u32_t remote_ip_uint32,int remote_port)  //a trick 
 		return -1;
 	}
 
-	struct sockaddr_in my_addr={0};
+	struct sockaddr_in6 my_addr={0};
 	socklen_t len=sizeof(my_addr);
 
     if(getsockname(new_udp_fd, (struct sockaddr *) &my_addr, &len)!=0) return -1;
 
-    ip=my_addr.sin_addr.s_addr;
+    ip=my_addr.sin6_addr.s_addr;
 
     close(new_udp_fd);
 
@@ -1880,12 +1880,12 @@ int try_to_list_and_bind(int &fd,u32_t local_ip_uint32,int port)  //try to bind 
     	 close(old_bind_fd);
      }
 
-	 struct sockaddr_in temp_bind_addr={0};
+	 struct sockaddr_in6 temp_bind_addr={0};
      //bzero(&temp_bind_addr, sizeof(temp_bind_addr));
 
-     temp_bind_addr.sin_family = AF_INET;
-     temp_bind_addr.sin_port = htons(port);
-     temp_bind_addr.sin_addr.s_addr = local_ip_uint32;
+     temp_bind_addr.sin6_family  = AF_INET;
+     temp_bind_addr.sin6_port = htons(port);
+     temp_bind_addr.sin6_addr.s_addr = local_ip_uint32;
 
      if (bind(fd, (struct sockaddr*)&temp_bind_addr, sizeof(temp_bind_addr)) !=0)
      {
