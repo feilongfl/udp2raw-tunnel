@@ -176,7 +176,7 @@ int init_raw_socket()
 	g_ip_id_counter=get_true_random_number()%65535;
 	if(lower_level==0)
 	{
-		raw_send_fd = socket(AF_INET , SOCK_RAW , IPPROTO_TCP);
+		raw_send_fd = socket(AF_INET6 , SOCK_RAW , IPPROTO_TCP);
 
 	    if(raw_send_fd == -1) {
 	    	mylog(log_fatal,"Failed to create raw_send_fd\n");
@@ -613,7 +613,7 @@ int send_raw_ip(raw_info_t &raw_info,const char * payload,int payloadlen)
     if(lower_level==0)
     {
 		struct sockaddr_in sin={0};
-		sin.sin_family = AF_INET;
+		sin.sin_family = AF_INET6;
 		//sin.sin_port = htons(info.dst_port); //dont need this
 		sin.sin_addr.s_addr = send_info.dst_ip;
 		ret = sendto(raw_send_fd, send_raw_ip_buf, ip_tot_len ,  0, (struct sockaddr *) &sin, sizeof (sin));
@@ -1028,7 +1028,7 @@ int send_raw_tcp_deprecated(const packet_info_t &info,const char * payload,int p
     struct pseudo_header psh;
 
     //some address resolution
-    sin.sin_family = AF_INET;
+    sin.sin_family = AF_INET6;
     sin.sin_port = htons(info.dst_port);
     sin.sin_addr.s_addr = info.dst_ip;
 
@@ -1829,12 +1829,12 @@ int get_src_adress(u32_t &ip,u32_t remote_ip_uint32,int remote_port)  //a trick 
 
 	socklen_t slen = sizeof(sockaddr_in);
 	//memset(&remote_addr_in, 0, sizeof(remote_addr_in));
-	remote_addr_in.sin_family = AF_INET;
+	remote_addr_in.sin_family = AF_INET6;
 	remote_addr_in.sin_port = htons(remote_port);
 	remote_addr_in.sin_addr.s_addr = remote_ip_uint32;
 
 
-	int new_udp_fd=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	int new_udp_fd=socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 	if(new_udp_fd<0)
 	{
 		mylog(log_warn,"create udp_fd error\n");
@@ -1869,11 +1869,11 @@ int try_to_list_and_bind(int &fd,u32_t local_ip_uint32,int port)  //try to bind 
 
 	 if(raw_mode==mode_faketcp)
 	 {
-		 fd=socket(AF_INET,SOCK_STREAM,0);
+		 fd=socket(AF_INET6,SOCK_STREAM,0);
 	 }
 	 else  if(raw_mode==mode_udp||raw_mode==mode_icmp)
 	 {
-		 fd=socket(AF_INET,SOCK_DGRAM,0);
+		 fd=socket(AF_INET6,SOCK_DGRAM,0);
 	 }
      if(old_bind_fd!=-1)
      {
@@ -1883,7 +1883,7 @@ int try_to_list_and_bind(int &fd,u32_t local_ip_uint32,int port)  //try to bind 
 	 struct sockaddr_in temp_bind_addr={0};
      //bzero(&temp_bind_addr, sizeof(temp_bind_addr));
 
-     temp_bind_addr.sin_family = AF_INET;
+     temp_bind_addr.sin_family = AF_INET6;
      temp_bind_addr.sin_port = htons(port);
      temp_bind_addr.sin_addr.s_addr = local_ip_uint32;
 

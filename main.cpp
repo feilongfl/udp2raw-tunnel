@@ -483,7 +483,7 @@ int client_on_raw_recv(conn_info_t &conn_info) //called when raw fd received a p
 
 			sockaddr_in tmp_sockaddr={0};
 
-			tmp_sockaddr.sin_family = AF_INET;
+			tmp_sockaddr.sin_family = AF_INET6;
 			tmp_sockaddr.sin_addr.s_addr=(u64>>32u);
 
 			tmp_sockaddr.sin_port= htons(uint16_t((u64<<32u)>>32u));
@@ -830,11 +830,11 @@ int server_on_raw_recv_ready(conn_info_t &conn_info,char * ip_port,char type,cha
 
 			socklen_t slen = sizeof(sockaddr_in);
 			//memset(&remote_addr_in, 0, sizeof(remote_addr_in));
-			remote_addr_in.sin_family = AF_INET;
+			remote_addr_in.sin_family = AF_INET6;
 			remote_addr_in.sin_port = htons(remote_port);
 			remote_addr_in.sin_addr.s_addr = remote_ip_uint32;
 
-			int new_udp_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+			int new_udp_fd = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 			if (new_udp_fd < 0) {
 				mylog(log_warn, "[%s]create udp_fd error\n",ip_port);
 				return -1;
@@ -1176,7 +1176,7 @@ int client_event_loop()
 	//g_packet_info.src_ip=source_address_uint32;
 	//g_packet_info.src_port=source_port;
 
-    udp_fd=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    udp_fd=socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
     set_buf_size(udp_fd,socket_buf_size,force_socket_buf);
 
 	int yes = 1;
@@ -1186,7 +1186,7 @@ int client_event_loop()
 
 	socklen_t slen = sizeof(sockaddr_in);
 	//memset(&local_me, 0, sizeof(local_me));
-	local_me.sin_family = AF_INET;
+	local_me.sin_family = AF_INET6;
 	local_me.sin_port = htons(local_port);
 	local_me.sin_addr.s_addr = local_ip_uint32;
 
@@ -1421,17 +1421,17 @@ int server_event_loop()
 
 	 if(raw_mode==mode_faketcp)
 	 {
-		 bind_fd=socket(AF_INET,SOCK_STREAM,0);
+		 bind_fd=socket(AF_INET6,SOCK_STREAM,0);
 	 }
 	 else  if(raw_mode==mode_udp||raw_mode==mode_icmp)//bind an adress to avoid collision,for icmp,there is no port,just bind a udp port
 	 {
-		 bind_fd=socket(AF_INET,SOCK_DGRAM,0);
+		 bind_fd=socket(AF_INET6,SOCK_DGRAM,0);
 	 }
 
 	 struct sockaddr_in temp_bind_addr={0};
     // bzero(&temp_bind_addr, sizeof(temp_bind_addr));
 
-     temp_bind_addr.sin_family = AF_INET;
+     temp_bind_addr.sin_family = AF_INET6;
      temp_bind_addr.sin_port = htons(local_port);
      temp_bind_addr.sin_addr.s_addr = local_ip_uint32;
 
@@ -1757,9 +1757,18 @@ int main(int argc, char *argv[])
 		mylog(log_warn,"you can run udp2raw with non-root account for better security. check README.md in repo for more info.\n");
 	}
 
-	local_ip_uint32=inet_addr(local_ip);
+	struct in_addr local_ip_s, remote_ip_s, source_ip_s;
+
+	inet_pton(AF_INET6, local_ip, (void *)&local_ip_s);
+	local_ip_uint32 = local_ip_s.s_addr;
+	inet_pton(AF_INET6, remote_ip, (void *)&remote_ip_s);
+	remote_ip_uint32 = remote_ip_s.s_addr;
+	inet_pton(AF_INET6, source_ip, (void *)&source_ip_s);
+	source_ip_uint32 = source_ip_s.s_addr;
+
+	/*local_ip_uint32=inet_addr(local_ip);
 	remote_ip_uint32=inet_addr(remote_ip);
-	source_ip_uint32=inet_addr(source_ip);
+	source_ip_uint32=inet_addr(source_ip);*/
 
 
 	//current_time_rough=get_current_time();
